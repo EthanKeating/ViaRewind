@@ -113,7 +113,7 @@ public class VirtualHologramEntity {
         marker = (armorStandFlags & 0x10) != 0;
 
         State prevState = currentState;
-        if (invisible && name != null) {
+        if ((invisible && marker) || (invisible && name != null)) {
             currentState = State.HOLOGRAM;
         } else {
             currentState = State.ZOMBIE;
