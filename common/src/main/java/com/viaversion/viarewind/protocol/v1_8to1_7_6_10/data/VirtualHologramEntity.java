@@ -49,6 +49,7 @@ public class VirtualHologramEntity {
     private boolean small = false;
     private boolean marker = false;
     private boolean sneaking = false;
+    private boolean showNametag = false;
 
     public VirtualHologramEntity(final UserConnection user, final int entityId) {
         this.user = user;
@@ -99,6 +100,7 @@ public class VirtualHologramEntity {
         // Filter armor stand data to calculate emulation
         byte flags = 0;
         byte armorStandFlags = 0;
+        byte nameTagFlags = 0;
         for (EntityData entityData : entityDataTracker) {
             if (entityData.id() == 0 && entityData.dataType() == EntityDataTypes1_8.BYTE) {
                 flags = ((Number) entityData.getValue()).byteValue();
@@ -107,12 +109,15 @@ public class VirtualHologramEntity {
                 if (name != null && name.isEmpty()) name = null;
             } else if (entityData.id() == 10 && entityData.dataType() == EntityDataTypes1_8.BYTE) {
                 armorStandFlags = ((Number) entityData.getValue()).byteValue();
+            } else if (entityData.id() == 3 && entityData.dataType() == EntityDataTypes1_8.BYTE) {
+                nameTagFlags = ((Number) entityData.getValue()).byteValue();
             }
         }
         final boolean invisible = (flags & 0x20) != 0;
         small = (armorStandFlags & 0x01) != 0;
         marker = (armorStandFlags & 0x10) != 0;
         sneaking = (flags & 0x02) != 0;
+        showNametag = (nameTagFlags & 0x01) != 0;
 
         State prevState = currentState;
         if (invisible && name != null) {
@@ -238,7 +243,7 @@ public class VirtualHologramEntity {
         entityDataList.add(new EntityData(EntityDataIndex1_7_6_10.ENTITY_FLAGS.getIndex(), EntityDataTypes1_7_6_10.BYTE, (byte) (sneaking ? 2 : 0)));
         entityDataList.add(new EntityData(EntityDataIndex1_7_6_10.ABSTRACT_AGEABLE_AGE.getIndex(), EntityDataTypes1_7_6_10.INT, -1700000));
         entityDataList.add(new EntityData(EntityDataIndex1_7_6_10.LIVING_ENTITY_BASE_NAME_TAG.getIndex(), EntityDataTypes1_7_6_10.STRING, name));
-        entityDataList.add(new EntityData(EntityDataIndex1_7_6_10.LIVING_ENTITY_BASE_NAME_TAG_VISIBILITY.getIndex(), EntityDataTypes1_7_6_10.BYTE, (byte) 1));
+        entityDataList.add(new EntityData(EntityDataIndex1_7_6_10.LIVING_ENTITY_BASE_NAME_TAG_VISIBILITY.getIndex(), EntityDataTypes1_7_6_10.BYTE, (byte) (showNametag ? 1 : 0)));
 
         wrapper.write(RewindTypes.ENTITY_DATA_LIST1_7, entityDataList);
     }
